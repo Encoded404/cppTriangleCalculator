@@ -29,9 +29,24 @@ int main(int argc, char** argv) {
         std::cout << "Triangle Calculator Application\n"
                   << "Usage: " << argv[0] << " [options] {values}\n"
                   << "Options:\n"
-                  << "  --help, -h       Show this help message\n"
-                  << "  --version, -v    Show application version\n"
-                  << "  --calculate [angleA, angleB, angleC, sideA, sideB, sideC], -c   Calculate triangle properties based on provided values\n";
+                  << "  -h, --help       Show this help message\n"
+                  << "  -v, --version    Show application version\n"
+                  << "  -c, --calculate <A> <B> <C> <a> <b> <c>\n"
+                  << "           Calculate a triangle using positional arguments:\n"
+                  << "           1: angleA (degrees)\n"
+                  << "           2: angleB (degrees)\n"
+                  << "           3: angleC (degrees)\n"
+                  << "           4: sideA\n"
+                  << "           5: sideB\n"
+                  << "           6: sideC\n\n"
+
+                  << "           Use ? for unknown values.\n\n"
+
+                  << "   -s, --solution <n>\n"
+                  << "           Select solution:\n"
+                  << "           0   no solution (default: first valid solution)\n"
+                  << "           1   first solution\n"
+                  << "           2   second solution\n";
         return 0;
     }
 
@@ -61,17 +76,31 @@ int main(int argc, char** argv) {
 
         AmbiguousCaseSolution ambiguousCaseSolution = AmbiguousCaseSolution::NoSolution;
 
-        if(args.size() == 8)
+        if(args.size() == 9)
         {
-            if(args[7] == "-1")
+            if(args[7] == "-s" || args[7] == "--solution")
             {
-                LOGIFACE_LOG(info, "Using first solution for ambiguous SSA case.");
-                ambiguousCaseSolution = AmbiguousCaseSolution::FirstSolution;
-            }
-            else if(args[7] == "-2")
-            {
-                LOGIFACE_LOG(info, "Using second solution for ambiguous SSA case.");
-                ambiguousCaseSolution = AmbiguousCaseSolution::SecondSolution;
+                // proceed
+                if(args[8] == "0")
+                {
+                    LOGIFACE_LOG(info, "No solution will be provided for ambiguous SSA cases.");
+                    ambiguousCaseSolution = AmbiguousCaseSolution::NoSolution;
+                }
+                else if(args[8] == "1")
+                {
+                    LOGIFACE_LOG(info, "Using first solution for ambiguous SSA case.");
+                    ambiguousCaseSolution = AmbiguousCaseSolution::FirstSolution;
+                }
+                else if(args[8] == "2")
+                {
+                    LOGIFACE_LOG(info, "Using second solution for ambiguous SSA case.");
+                    ambiguousCaseSolution = AmbiguousCaseSolution::SecondSolution;
+                }
+                else
+                {
+                    LOGIFACE_LOG(error, "Invalid solution option provided. Use 0, 1, or 2.");
+                    return 1;
+                }
             }
         }
 

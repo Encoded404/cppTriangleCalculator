@@ -6,6 +6,9 @@ project(ModernCMakeTemplate VERSION 1.0 LANGUAGES CXX)
 # Find Python3 for test data generation
 find_package(Python3 REQUIRED)
 
+# Enable logging by default
+set(ENABLE_LOGGING ON CACHE BOOL "Enable application logging")
+
 # Enable CTest at the top level so `ctest` discovers tests
 include(CTest)
 

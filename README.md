@@ -21,3 +21,7 @@ cmake --build build --preset debug (debug|release|relwithdebinfo)
 
 ## run tests
 ctest --test-dir build/ -C Debug (Debug|Release|RelWithDebInfo)
+
+## solve a triangle
+Linux:
+- ./build/src/app/Debug/TriangleCalculator --help
