@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.15)
 # Project name and version
 project(ModernCMakeTemplate VERSION 1.0 LANGUAGES CXX)
 
+# Find Python3 for test data generation
+find_package(Python3 REQUIRED)
+
 # Enable CTest at the top level so `ctest` discovers tests
 include(CTest)
 

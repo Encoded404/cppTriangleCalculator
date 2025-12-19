@@ -6,7 +6,7 @@ target_include_directories(logiface INTERFACE
 )
 
 # app library
-add_subdirectory(lib1)
+add_subdirectory(TriangleCalculatorLib)
 
 # Executable that links the static library
 add_subdirectory(app)

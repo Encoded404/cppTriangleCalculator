@@ -8,6 +8,7 @@
         {
             "name": "gtest",
             "version>=": "1.13.0"
-        }
+        },
+        "nlohmann-json"
     ]
 }

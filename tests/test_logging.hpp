@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTS_TEST_LOGGING_HPP
+#define TESTS_TEST_LOGGING_HPP
 
 #include <cstdlib>
 #include <filesystem>
@@ -39,7 +40,7 @@ public:
             return;
         }
 
-        logger_.emplace(*stream_);
+        logger_.emplace(*stream_, *stream_);
         previous_logger_ = ::logiface::get_logger();
         ::logiface::set_logger(&*logger_);
     }
@@ -47,6 +48,12 @@ public:
     void OnTestEnd(const ::testing::TestInfo&) override {
         if (active_) {
             ::logiface::set_logger(previous_logger_);
+            if (stream_ && stream_->is_open()) {
+                stream_->flush();
+                if (!stream_->good()) {
+                    stream_->clear();
+                }
+            }
         }
         logger_.reset();
         stream_.reset();
@@ -79,3 +86,5 @@ inline void InstallPerTestFileLogger() {
 }
 
 }  // namespace test_logging
+
+#endif  // TESTS_TEST_LOGGING_HPP
