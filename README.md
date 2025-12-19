@@ -25,3 +25,4 @@ ctest --test-dir build/ -C Debug (Debug|Release|RelWithDebInfo)
 ## solve a triangle
 Linux:
 - ./build/src/app/Debug/TriangleCalculator --help
+- ./build/src/app/Debug/TriangleCalculator -c 60 ? ? 5 ? 5

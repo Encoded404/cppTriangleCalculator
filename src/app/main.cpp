@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
 
     initializeLogger();
+    
+    uint iterator = 0;
 
     if(args.size() == 0) {
         LOGIFACE_LOG(info, "No arguments provided. Exiting.");
@@ -46,7 +48,10 @@ int main(int argc, char** argv) {
                   << "           Select solution:\n"
                   << "           0   no solution (default: first valid solution)\n"
                   << "           1   first solution\n"
-                  << "           2   second solution\n";
+                  << "           2   second solution\n\n"
+
+                  << "   -l, --log-level <level>\n"
+                  << "           Set log level (trace, debug, info, warn, error, critical)\n";
         return 0;
     }
 
@@ -55,7 +60,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    if(args[0] == "--calculate" || args[0] == "-c") {
+    if(args[iterator] == "--calculate" || args[iterator] == "-c") {
+        ++iterator;
         if(args.size() < 7) {
             LOGIFACE_LOG(error, "Invalid number of arguments for calculation. Expected 6 values.");
             return 1;
@@ -63,12 +69,12 @@ int main(int argc, char** argv) {
 
         Triangle triangle;
         try {
-            triangle.angleA = args[1] == "?" ? std::nullopt : std::optional<double>(std::stod(args[1]));
-            triangle.angleB = args[2] == "?" ? std::nullopt : std::optional<double>(std::stod(args[2]));
-            triangle.angleC = args[3] == "?" ? std::nullopt : std::optional<double>(std::stod(args[3]));
-            triangle.sideA  = args[4] == "?" ? std::nullopt : std::optional<double>(std::stod(args[4]));
-            triangle.sideB  = args[5] == "?" ? std::nullopt : std::optional<double>(std::stod(args[5]));
-            triangle.sideC  = args[6] == "?" ? std::nullopt : std::optional<double>(std::stod(args[6]));
+            triangle.angleA = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
+            triangle.angleB = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
+            triangle.angleC = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
+            triangle.sideA  = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
+            triangle.sideB  = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
+            triangle.sideC  = args[iterator] == "?" ? std::nullopt : std::optional<double>(std::stod(args[iterator])); ++iterator;
         } catch (const std::exception& e) {
             LOGIFACE_LOG(error, "Error parsing input values: " + std::string(e.what()));
             return 1;
@@ -76,24 +82,28 @@ int main(int argc, char** argv) {
 
         AmbiguousCaseSolution ambiguousCaseSolution = AmbiguousCaseSolution::NoSolution;
 
-        if(args.size() == 9)
+        if(args.size() > iterator + 1)
         {
-            if(args[7] == "-s" || args[7] == "--solution")
+            if(args[iterator] == "-s" || args[iterator] == "--solution")
             {
                 // proceed
-                if(args[8] == "0")
+                ++iterator;
+                if(args[iterator] == "0")
                 {
                     LOGIFACE_LOG(info, "No solution will be provided for ambiguous SSA cases.");
+                    ++iterator;
                     ambiguousCaseSolution = AmbiguousCaseSolution::NoSolution;
                 }
-                else if(args[8] == "1")
+                else if(args[iterator] == "1")
                 {
                     LOGIFACE_LOG(info, "Using first solution for ambiguous SSA case.");
+                    ++iterator;
                     ambiguousCaseSolution = AmbiguousCaseSolution::FirstSolution;
                 }
-                else if(args[8] == "2")
+                else if(args[iterator] == "2")
                 {
                     LOGIFACE_LOG(info, "Using second solution for ambiguous SSA case.");
+                    ++iterator;
                     ambiguousCaseSolution = AmbiguousCaseSolution::SecondSolution;
                 }
                 else
@@ -104,8 +114,62 @@ int main(int argc, char** argv) {
             }
         }
 
+        // Process log level flag if present
+        if(args.size() > iterator && (args[iterator] == "-l" || args[iterator] == "--log-level"))
+        {
+            if(args.size() <= iterator + 1)
+            {
+                LOGIFACE_LOG(error, "Log level flag requires an argument.");
+                return 1;
+            }
+            ++iterator;
+            logiface::logger* lg = logiface::get_logger();
+            if(!lg)
+            {
+                LOGIFACE_LOG(error, "No logger initialized to set log level.");
+                return 1;
+            }
+            if(args[iterator] == "trace")
+            {
+                lg->set_level(logiface::level::trace);
+                LOGIFACE_LOG(trace, "logging logs at trace level or above.");
+            }
+            else if(args[iterator] == "debug")
+            {
+                lg->set_level(logiface::level::debug);
+                LOGIFACE_LOG(debug, "logging logs at debug level or above.");
+            }
+            else if(args[iterator] == "info")
+            {
+                lg->set_level(logiface::level::info);
+                LOGIFACE_LOG(info, "logging logs at info level or above.");
+            }
+            else if (args[iterator] == "warn")
+            {
+                lg->set_level(logiface::level::warn);
+                LOGIFACE_LOG(warn, "logging logs at warn level or above.");
+            }
+            else if (args[iterator] == "error")
+            {
+                lg->set_level(logiface::level::error);
+                LOGIFACE_LOG(error, "logging logs at error level or above.");
+            }
+            else if (args[iterator] == "critical")
+            {
+                lg->set_level(logiface::level::critical);
+                LOGIFACE_LOG(error, "logging logs at critical level."); // we cant use critical log here, that would cause a actual exception
+            }
+            else
+            {
+                LOGIFACE_LOG(error, "Invalid log level provided. Use either trace, debug, info, warn, error, or critical.");
+                return 1;
+            }
+            ++iterator;
+        }
+
         TriangleCalculator calculator;
         Result result = calculator.finalizeTriangle(triangle, ambiguousCaseSolution);
+
         std::cout << "Calculated Triangle Properties:\n"
                   << "  angleA: " << (result.triangle.angleA.has_value() ? std::to_string(result.triangle.angleA.value()) : "?") << "\n"
                   << "  angleB: " << (result.triangle.angleB.has_value() ? std::to_string(result.triangle.angleB.value()) : "?") << "\n"
